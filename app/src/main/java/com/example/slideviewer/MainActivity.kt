@@ -1,11 +1,19 @@
 package com.example.slideviewer
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 
 class MainActivity : AppCompatActivity() {
+    private val intervalTime = 5000.toLong()
+    lateinit var banner: ViewPager2
+    private var handler = BannerHandler()
+    var bannerPosition = Int.MAX_VALUE/2
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -27,14 +35,57 @@ class MainActivity : AppCompatActivity() {
         )
 
 
-        findViewById<ViewPager2>(R.id.view_pager).apply {
+        banner = findViewById<ViewPager2>(R.id.view_pager).apply {
             offscreenPageLimit = 1 // 다음 페이지 몇개까지 미리 로딩할지 정하는 함수
             adapter = MainAdapter()
-            currentItem = 10
-            // 항상 인접한 페이지가 배치되도록 오프스크린 페이지 제한을 1개 이상으로 설정한다
+            currentItem = bannerPosition // 시작 위치 지정정
+           // 항상 인접한 페이지가 배치되도록 오프스크린 페이지 제한을 1개 이상으로 설정한다
             setPageTransformer(pageTransformer)
             clipToPadding = false
             addItemDecoration(itemDecoration)
+
+            registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback(){
+                override fun onPageScrollStateChanged(state: Int) {
+                    super.onPageScrollStateChanged(state)
+                    when(state) {
+                        ViewPager2.SCROLL_STATE_DRAGGING -> autoScrollStop() //  뷰페이저가 움직이는 중일 때 자동 스크롤 중단 함수 호출
+                        ViewPager2.SCROLL_STATE_IDLE -> autoScrollStart(intervalTime) // 뷰페이저 멈춰 있을때 자동 스크롤 시작 호출
+
+                        ViewPager2.SCROLL_STATE_SETTLING -> { // 뷰페이저 끝 도달했을때 자동스크롤 중단
+                            if(banner.currentItem != 0) {
+                                autoScrollStop()
+                            }
+                        }
+                    }
+                }
+            })
         }
     }
+
+    private fun autoScrollStop() {
+        handler.removeMessages(0)
+    }
+
+    //배너 자동 스크롤 시작하게 하는 함수
+    private fun autoScrollStart(time: Long){
+        handler.removeMessages(0) //이거 안하면 핸들러가 여러개로 계속 늘어남
+        handler.sendEmptyMessageDelayed(0, time) //intervalTime 만큼 반복해서 핸들러를 실행
+    }
+
+    //배너 자동 스크롤 컨트롤하는 클래스
+    private inner class BannerHandler: Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+            if(msg.what == 0){
+                banner.setCurrentItem(banner.currentItem + 1, true) //다음 페이지로 이동
+                autoScrollStart(intervalTime) //스크롤 킵고잉
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        handler.removeMessages(0)
+    }
+
 }

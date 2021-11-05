@@ -38,9 +38,9 @@ class MainAdapter : RecyclerView.Adapter<MainAdapter.MyViewHolder>() {
             val item = list[index]
             tvName.text = String.format("%s", item)
             if (adapterPosition % 2 == 0) {
-                ivBanner.setBackgroundColor(Color.YELLOW)
+                ivBanner.setBackgroundColor(Color.RED)
             } else {
-                ivBanner.setBackgroundColor(Color.GREEN)
+                ivBanner.setBackgroundColor(Color.BLUE)
             }
 
         }
