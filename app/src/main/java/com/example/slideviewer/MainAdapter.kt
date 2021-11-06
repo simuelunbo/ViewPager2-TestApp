@@ -10,13 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 
 
 class MainAdapter : RecyclerView.Adapter<MainAdapter.MyViewHolder>() {
-    private val list = arrayListOf(
-        "first",
-        "second",
-        "third",
-        "fourth",
-        "fifth"
-    )
+
+    private val list = ArrayList<String>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_row, parent, false)
@@ -28,6 +23,12 @@ class MainAdapter : RecyclerView.Adapter<MainAdapter.MyViewHolder>() {
     }
 
     override fun getItemCount(): Int = Int.MAX_VALUE
+
+    fun addList(list: List<String>) {
+        this.list.clear()
+        this.list.addAll(list)
+        notifyDataSetChanged()
+    }
 
 
     inner class MyViewHolder(v: View) : RecyclerView.ViewHolder(v) {
