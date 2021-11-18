@@ -8,12 +8,11 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
 
 class MainActivity : AppCompatActivity() {
     private val intervalTime = 5000.toLong()
     lateinit var banner: ViewPager2
-    private var handler = BannerHandler()
+    private lateinit var handler: Handler
     private lateinit var mainAdapter: MainAdapter
     private lateinit var tabLayout: TabLayout
 
@@ -80,6 +79,17 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }
+
+        //배너 자동 스크롤 컨트롤
+        handler = object : Handler(Looper.getMainLooper()) {
+            override fun handleMessage(msg: Message) {
+                super.handleMessage(msg)
+                if (msg.what == 0) {
+                    banner.setCurrentItem(banner.currentItem + 1, true) //다음 페이지로 이동
+                    autoScrollStart(intervalTime) //스크롤 킵고잉
+                }
+            }
+        }
     }
 
     private fun autoScrollStop() {
@@ -92,16 +102,6 @@ class MainActivity : AppCompatActivity() {
         handler.sendEmptyMessageDelayed(0, time) //intervalTime 만큼 반복해서 핸들러를 실행
     }
 
-    //배너 자동 스크롤 컨트롤하는 클래스
-    private inner class BannerHandler : Handler(Looper.getMainLooper()) {
-        override fun handleMessage(msg: Message) {
-            super.handleMessage(msg)
-            if (msg.what == 0) {
-                banner.setCurrentItem(banner.currentItem + 1, true) //다음 페이지로 이동
-                autoScrollStart(intervalTime) //스크롤 킵고잉
-            }
-        }
-    }
 
     override fun onPause() {
         super.onPause()
